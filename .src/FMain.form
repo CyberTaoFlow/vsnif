@@ -1,0 +1,34 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,70,61)
+  Icon = Picture["icon:/large/watch"]
+  Arrangement = Arrange.Vertical
+  { Label2 Label
+    MoveScaled(1,1,39,2)
+    AutoResize = True
+    Text = ("Exclude (has priority over include)")
+  }
+  { FilterBox2 ComboBox
+    MoveScaled(0,4,69,4)
+    Text = (".png|.jpg|.gif|.htm|.php|.asp|.css|.js|favicon.ico|.xml|.swf")
+  }
+  { Label1 Label
+    MoveScaled(1,9,24,2)
+    AutoResize = True
+    Text = ("Include")
+  }
+  { FilterBox ComboBox
+    MoveScaled(0,12,69,4)
+    Text = ("videoplayback|.mp4|.avi|.flv")
+  }
+  { ScrollView1 ScrollView
+    MoveScaled(1,18,69,41)
+    Background = Color.SelectedForeground
+    Expand = True
+    Arrangement = Arrange.Vertical
+  }
+  { Timer1 #Timer
+    #MoveScaled(62,20)
+  }
+}

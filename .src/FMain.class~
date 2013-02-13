@@ -1,0 +1,189 @@
+' Gambas class file
+
+Public ngrep As Process
+Public thehost As String
+Public theurl As String
+Public thecookie As String
+Public thereferer As String
+Public theUA As String
+Public alreadydone As New String[]
+
+Public Entries As New Collection[]
+
+Public ThePanel As Panel
+Public TheText As Label
+Public thedownbutton As Button
+
+
+
+Public Sub _new()
+
+End
+
+Public Sub Form_Open()
+  ngrep = Shell "ngrep -W byline -ql GET" For Read As "ngrep"
+End
+
+
+
+Public Sub ngrep_read()
+  Dim ngrepout As String
+  Timer1.Stop
+  Timer1.start
+  'ngrepout = Read #ngrep, -1
+  Line Input #ngrep, ngrepout
+  'Debug ngrepout
+  Select Case ngrepout
+    Case Like "*GET /*"
+      CheckAndMakeEntry()
+      theurl = Split(Mid(ngrepout, InStr(ngrepout, "/")), " ")[0]
+    Case Like "*Cookie:*"
+      thecookie = Left(Replace(ngrepout, "Cookie: ", ""), -1)
+    Case Like "*Host:*"
+      thehost = Left(Replace(ngrepout, "Host: ", ""), - 1)
+    Case Like "*Referer: *"
+      thereferer = Left(Replace(ngrepout, "Referer: ", ""), - 1)
+    Case Like "*User-Agent: *"
+      theUA = Left(Replace(ngrepout, "User-Agent: ", ""), - 1)
+    Case Like "*Connection: *"
+      CheckAndMakeEntry()
+  End Select
+End
+
+Public Sub Timer1_Timer()
+  CheckAndMakeEntry()
+End
+
+Public Sub CheckAndMakeEntry()
+  If thehost <> "" Then
+    If Matches(FilterBox.text, FilterBox2.text, TheUrl) Then MakeEntry(TheHost, TheUrl, TheCookie, TheReferer, TheUA)
+    theurl = ""
+    thehost = ""
+    thecookie = ""
+  Endif
+End
+
+
+Public Function Matches(includefilter As String, excludefilter As String, theurl As String) As Boolean
+  Dim aFilter As String
+  If excludefilter <> "" Then
+    For Each afilter In Split(excludefilter, "|", "", True) 
+      If theurl Like "*" & afilter & "*" Then Return False
+    Next
+  Endif
+  If includefilter <> "" Then
+    For Each afilter In Split(includefilter, "|", "", False) 
+      If theurl Like "*" & afilter & "*" Then Return True
+    Next
+      Else
+    Return True
+  Endif
+  Return False
+End
+
+
+Public Sub MakeEntry(TheHost As String, TheUrl As String, TheCookie As String, TheReferer As String, TheUA As String)
+  Dim AnEntry As New Collection
+  If alreadydone.Find(TheHost & TheUrl) <> -1 Then Return
+  AnEntry["TheCookie"] = TheCookie
+  AnEntry["TheHost"] = TheHost 
+  AnEntry["TheUrl"] = TheUrl
+  Anentry["TheReferer"] = TheReferer
+  Anentry["TheUA"] = TheUA
+  Entries.Add(Anentry)
+  alreadydone.Add(TheHost & TheUrl)
+  ThePanel = New Panel(scrollview1) As "ThePanel"
+  ThePanel.arrangement = Arrange.Horizontal
+  ThePanel.autoresize = True
+  ThePanel.border = Border.none
+  Thedownbutton = New Button(ThePanel) As "TheDownButton"
+  thedownbutton.Picture = stock["small/down"]
+  thedownbutton.w = 16
+  TheText = New Label(ThePanel) As "TheText"
+  TheText.Text = TheHost & TheUrl
+  TheText.tag = Entries.count - 1
+  TheText.Foreground = Color.Selectedbackground
+  TheText.Font.Underline = True
+  TheText.background = Color.default
+  TheText.AutoResize = True
+End
+
+Public Sub TheText_Enter()
+  Last.foreground = Color.red
+End
+Public Sub TheText_Leave()
+  Last.foreground = Color.Selectedbackground
+End
+Public Sub TheText_MouseDown()
+  Dim cookiefile As String = GetCookiefile(Last.tag)
+  Dim id As Integer = Last.tag
+  Dim mref, mua As String
+  If Mouse.right Then 
+    Clipboard.Copy("'http://" & Last.text & "'")
+    Try Debug "TheHost " & Entries[id]["TheHost"]
+    Try Debug "TheUrl " & Entries[id]["TheUrl"]
+    Try Debug "TheCookie " & Entries[id]["TheCookie"]
+    Try Debug "TheReferer" & Entries[id]["TheReferer"]
+    Try Debug "TheUA " & Entries[id]["TheUA"]
+    Return
+  Endif
+  If Entries[id]["TheReferer"] <> "" Then mref = " -referrer " & "'" & Entries[id]["TheReferer"] & "' "
+  If Entries[id]["TheReferer"] <> "" Then mua = " -user-agent " & "'" & Entries[id]["TheUA"] & "' "
+  
+  If cookiefile <> "" Then 
+    Shell "mplayer " & mref & mua & "'http://" & Last.text & "'" & " -cookies -cookies-file " & cookiefile & "< /dev/null &" 
+    Debug "mplayer " & mref & mua & "'http://" & Last.text & "'" & " -cookies -cookies-file " & cookiefile & "< /dev/null &" 
+    Debug
+      Else
+    Shell "mplayer " & "'http://" & Last.text & "'" & "< /dev/null &" ""
+    Debug "mplayer " & "'http://" & Last.text & "'" & "< /dev/null &" ""
+ Endif
+ 
+
+End
+
+Public Sub GetCookieFile(id As Integer) As String
+  Dim cookie As String
+  Dim tmp As String[]
+  Dim field, domain, name, value As String
+  Dim tab As String = Chr(9)
+  Dim cr As String = Chr(13) & Chr(10)
+  Dim cfile As File
+  Dim cfilename As String = Temp()
+  
+  
+  Try cookie = Entries[id]["TheCookie"]
+  If Error Then Return
+  'cookie = Replace(cookie, "Cookie: ", "")
+  tmp = Split(Entries[id]["TheHost"], ".")
+  domain = "." & tmp[tmp.max - 1] & "." & tmp[tmp.max]
+  tmp = Split(cookie, ";")
+  
+  cfile = Open cfilename For Write Create
+  For Each field In tmp
+    'Print domain & "---" & "TRUE" & "/" & "FALSE" & "9976121817" & Split(field, ""
+    field = Trim(field)
+    name = Left(field, InStr(field, "="))
+    value = Replace(field, name, "")
+    name = Left(name, String.Len(name) - 1)
+    Write #cfile, domain & tab & "TRUE" & tab & "/" & tab & "FALSE" & tab & "9676121817" & tab & name & tab & value & cr
+  Next  
+  Close #cfile
+  Debug cfilename
+  Return cfilename
+End
+
+
+Public Sub Form_Close()
+
+  ngrep.Kill()
+
+End
+
+Public Sub ScrollView1_NewChild(Control As Control)
+
+  scrollview1.Scroll(0, 99999)
+
+End
+
+
