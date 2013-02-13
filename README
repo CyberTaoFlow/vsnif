@@ -1,0 +1,14 @@
+vsnif
+=====
+gui to ngrep focused to video viewing
+
+
+requires mplayer,ngrep and gambas
+
+
+Download and run:
+=================
+git clone https://github.com/kokoko3k/vsnif.git
+cd vsnif
+gbc3 -e -a -g -t -p -m && gba3 && ./*.gambas
+
