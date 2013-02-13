@@ -1,7 +1,9 @@
 vsnif
 =====
 gui to ngrep focused to video viewing
-
+Start it, then browse some video site, links will appear in vsnif window.
+left click to play it with mplayer; right click to copy the link to the clipboard
+download is not implemented.
 
 requires mplayer,ngrep and gambas
 
