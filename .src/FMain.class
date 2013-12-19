@@ -21,7 +21,7 @@ Public Sub _new()
 End
 
 Public Sub Form_Open()
-  ngrep = Shell "ngrep -W byline -ql GET" For Read As "ngrep"
+  ngrep = Shell "sudo tcpdump -w - | sudo ngrep -W byline -ql GET -I -" For Read As "ngrep"
 End
 
 
@@ -33,9 +33,15 @@ Public Sub ngrep_read()
   'ngrepout = Read #ngrep, -1
   Line Input #ngrep, ngrepout
   'Debug ngrepout
+   ' If ngrepout Like "*rtmp*" Then
+   '   Debug ngrepout
+   '   Debug URL.Decode(ngrepout)
+   '   Stop
+   ' Endif
   Select Case ngrepout
     Case Like "*GET /*"
       CheckAndMakeEntry()
+      Try ngrepout = URL.Decode(ngrepout)
       theurl = Split(Mid(ngrepout, InStr(ngrepout, "/")), " ")[0]
     Case Like "*Cookie:*"
       thecookie = Left(Replace(ngrepout, "Cookie: ", ""), -1)

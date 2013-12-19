@@ -1,13 +1,15 @@
 # Gambas Project File 3.0
-# Compiled with Gambas 3.3.4
+# Compiled with Gambas 3.5.1
 Title=vsnif
 Startup=FMain
-Version=0.0.1
+Version=0.0.3
 Component=gb.image
 Component=gb.qt4
 Component=gb.form
 Component=gb.crypt
 Component=gb.desktop
+Component=gb.net
 Component=gb.qt4.ext
+Component=gb.web
 TabSize=2
 Packager=1

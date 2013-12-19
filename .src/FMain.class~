@@ -21,7 +21,7 @@ Public Sub _new()
 End
 
 Public Sub Form_Open()
-  ngrep = Shell "ngrep -W byline -ql GET" For Read As "ngrep"
+  ngrep = Shell "sudo tcpdump -w - | sudo ngrep -W byline -ql GET -I -" For Read As "ngrep"
 End
 
 
@@ -33,9 +33,15 @@ Public Sub ngrep_read()
   'ngrepout = Read #ngrep, -1
   Line Input #ngrep, ngrepout
   'Debug ngrepout
+   ' If ngrepout Like "*rtmp*" Then
+   '   Debug ngrepout
+   '   Debug URL.Decode(ngrepout)
+   '   Stop
+   ' Endif
   Select Case ngrepout
     Case Like "*GET /*"
       CheckAndMakeEntry()
+      ngrepout = URL.Decode(ngrepout)
       theurl = Split(Mid(ngrepout, InStr(ngrepout, "/")), " ")[0]
     Case Like "*Cookie:*"
       thecookie = Left(Replace(ngrepout, "Cookie: ", ""), -1)
@@ -123,7 +129,7 @@ Public Sub TheText_MouseDown()
     Try Debug "TheHost " & Entries[id]["TheHost"]
     Try Debug "TheUrl " & Entries[id]["TheUrl"]
     Try Debug "TheCookie " & Entries[id]["TheCookie"]
-    Try Debug "TheReferer" & Entries[id]["TheReferer"]
+    Try Debug "TheReferer " & Entries[id]["TheReferer"]
     Try Debug "TheUA " & Entries[id]["TheUA"]
     Return
   Endif
@@ -181,9 +187,8 @@ Public Sub Form_Close()
 End
 
 Public Sub ScrollView1_NewChild(Control As Control)
-
   scrollview1.Scroll(0, 99999)
-
+  scrollview1.EnsureVisible(0, 9999999, 0, 99999999)
 End
 
 

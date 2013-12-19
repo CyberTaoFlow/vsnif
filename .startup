@@ -2,12 +2,14 @@ FMain
 vsnif
 0
 0
-0.0.1
+0.0.2
 
 gb.image
 gb.qt4
 gb.form
 gb.crypt
 gb.desktop
+gb.net
 gb.qt4.ext
+gb.web
 
